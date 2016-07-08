@@ -7,7 +7,6 @@
 - set color
 
 - RF code key commands
-- history
 - completion
 """
 
@@ -81,6 +80,9 @@ class PyInterpreterTextView(NSTextView):
 
         self._minInsertionPoint = 0
 
+        self._history = [""]
+        self._historyIndex = 1
+
         return self
 
     def getConsoleSize(self):
@@ -138,17 +140,45 @@ class PyInterpreterTextView(NSTextView):
         self.scrollRangeToVisible_((index, 0))
         self.setSelectedRange_((index, 0))
 
+    def moveDown_(self, sender):
+        self._historyIndex += 1
+        if self._historyIndex >= len(self._history):
+            self._historyIndex = len(self._history)
+            NSBeep()
+        else:
+            self._insertHistoryLine()
+
+    def moveUp_(self, sender):
+        self._historyIndex -= 1
+        if self._historyIndex <= 0:
+            self._historyIndex = 0
+            NSBeep()
+        else:
+            self._insertHistoryLine()
+
+    def _insertHistoryLine(self):
+        text = self._history[self._historyIndex]
+        text = self.makeAttributedString_withColor_(text, self._codeColor)
+        begin = self._minInsertionPoint
+        length = self.textLength() - begin
+        textStorage = self.textStorage()
+        textStorage.replaceCharactersInRange_withAttributedString_((begin, length), text)
+
     # Output
 
-    def writeLine_withColor_(self, line, color):
+    def makeAttributedString_withColor_(self, text, color):
         attrs = {
             NSForegroundColorAttributeName : color,
             NSFontAttributeName : self.font()
         }
-        line = NSAttributedString.alloc().initWithString_attributes_(
-            line,
+        text = NSAttributedString.alloc().initWithString_attributes_(
+            text,
             attrs
         )
+        return text
+
+    def writeLine_withColor_(self, line, color):
+        line = self.makeAttributedString_withColor_(line, color)
         self.textStorage().appendAttributedString_(line)
         self.scrollToEnd()
 
@@ -177,6 +207,8 @@ class PyInterpreterTextView(NSTextView):
         return line
 
     def executeLine_(self, line):
+        self._history.append(line)
+        self._historyIndex = len(self._history)
         save = (sys.stdout, sys.stderr)
         sys.stdout = self._stdout
         sys.stderr = self._stderr
