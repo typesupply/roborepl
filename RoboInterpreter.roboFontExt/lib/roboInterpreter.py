@@ -16,6 +16,9 @@ To Do
 - RF code key commands
 - completion
 - themes
+    - basic
+    - classic
+    - robofog
 - use a floating panel
 """.strip()
 
@@ -68,6 +71,7 @@ defaultSettings = dict(
     bannerGreeting="Welcome to RoboREPL! Type \"help\" for help.",
     windowWidth=80,
     windowHeight=24,
+    tabString="  ",
     fontName="QueueMono-Light",
     fontSize=20,
     colorCode=(0, 0, 0, 1),
@@ -135,6 +139,7 @@ RoboREPL Settings Manager
 Attributes
 ----------
 help : This.
+tabString : Whitespace to insert when the tab key is pressed. Must be a string.
 windowWidth : The number of characters per line. Must be a positive integer.
 windowHeight : The number of rows per window. Must be a positive integer.
 fontName : The font name. Must be a string.
@@ -188,6 +193,7 @@ class PyREPLSettings(object):
     colorBackground = settingsProperty("colorBackground", settingsColorValidator)
     bannerGreeting = settingsProperty("bannerGreeting", settingsStringValidator)
     startupCode = settingsProperty("startupCode", settingsStringValidator)
+    tabString = settingsProperty("tabString", settingsStringValidator)
 
     def editorItems(self):
         d = dict(
@@ -197,6 +203,7 @@ class PyREPLSettings(object):
             colorStdout=self.colorStdout,
             colorStderr=self.colorStderr,
             colorBackground=self.colorBackground,
+            tabString=self.tabString
         )
         return d.items()
 
@@ -272,6 +279,7 @@ class PyREPLWindow(BaseWindowController):
     def settingsChangedCallback(self, notification):
         key, value = notification.data.items()[0]
         editorMethods = dict(
+            tabString=self.w.editor.setTabString,
             fontName=self.w.editor.setFontName,
             fontSize=self.w.editor.setFontSize,
             colorCode=self.w.editor.setCodeColor,
@@ -335,6 +343,8 @@ class PyREPLTextView(NSTextView):
         self._stdout = PseudoUTF8Output(self.writeStdout_)
         self._prompt = sys.ps1
 
+        self._tabString = "  "
+
         self._minInsertionPoint = 0
 
         self._history = [""]
@@ -343,6 +353,9 @@ class PyREPLTextView(NSTextView):
         return self
 
     # Settings
+
+    def setTabString_(self, value):
+        self._tabString = value
 
     def getCharacterBox(self):
         font = self.font()
@@ -371,6 +384,11 @@ class PyREPLTextView(NSTextView):
 
     # Input
 
+    def scrollToEnd(self):
+        index = self.textLength()
+        self.scrollRangeToVisible_((index, 0))
+        self.setSelectedRange_((index, 0))
+
     def keyDown_(self, event):
         if event.modifierFlags() & NSCommandKeyMask and event.characters() == "k":
             self.clear()
@@ -385,10 +403,8 @@ class PyREPLTextView(NSTextView):
 
     insertNewlineIgnoringFieldEditor_ = insertNewline_
 
-    def scrollToEnd(self):
-        index = self.textLength()
-        self.scrollRangeToVisible_((index, 0))
-        self.setSelectedRange_((index, 0))
+    def insertTab_(self, sender):
+        self.writeLine_withColor_(self._tabString, self._codeColor)
 
     def moveDown_(self, sender):
         self._historyIndex += 1
@@ -545,6 +561,9 @@ class PyREPLTextEditor(vanilla.TextEditor):
 
     def getCharacterBox(self):
         return self.getNSTextView().getCharacterBox()
+
+    def setTabString(self, value):
+        self.getNSTextView().setTabString_(value)
 
     def setFontName(self, value):
         self._fontName = value
