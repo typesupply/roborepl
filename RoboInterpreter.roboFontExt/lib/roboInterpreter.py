@@ -36,9 +36,45 @@ try:
 except AttributeError:
     sys.ps2 = "... "
 
+try:
+    import mojo
+    inRoboFont = True
+except ImportError:
+    inRoboFont = False
+
 # --------
 # Settings
 # --------
+
+defaultStartupCode = """
+# This script will be executed when the interpreter is started.
+# It will be executed in the same namespace as your later code
+# will be executed in, so you can define variables, import
+# modules and anything else that you want.
+""".lstrip()
+
+if inRoboFont:
+    settings += """
+CF = CurrentFont
+CG = CurrentGlyph
+AF = AllFonts
+OF = OpenFont
+NF = NewFont
+"""
+
+defaultSettings = dict(
+    bannerGreeting="Welcome to RoboREPL! Type \"help\" for help.",
+    windowWidth=80,
+    windowHeight=24,
+    fontName="QueueMono-Light",
+    fontSize=20,
+    fontLeading=1.2,
+    colorCode=(0, 0, 0, 1),
+    colorStderr=(1, 0, 0, 1),
+    colorStdout=(0, 0, 1, 1),
+    colorBackground=(1, 1, 1, 1),
+    startupCode=defaultStartupCode
+)
 
 class PyREPLSettingsError(Exception): pass
 
@@ -91,32 +127,28 @@ class settingsProperty(object):
 
 
 settingsManagerDoc = """
-=======================
-Editor Settings Manager
-=======================
+=========================
+RoboREPL Settings Manager
+=========================
 
 Attributes
 ----------
 help : This.
-windowWidth : The number of characters per line. This must be a positive integer.
-windowHeight : The number of rows per window. This must be a positive integer.
+windowWidth : The number of characters per line. Must be a positive integer.
+windowHeight : The number of rows per window. Must be a positive integer.
 fontName : The font name. Must be a string.
 fontSize : The font size. Must be a positive number.
 fontLeading : The font leading percentage. Must be a positive number.
 colorCode : The color for code text. Must be a color tuple.
-colorStdout : The color for stdout text. Must be a color tuple.
-colorStderr : The color for stderr text. Must be a color tuple.
-colorBackground : The background color. Must be a color tuple.
-bannerGreeting* : The message displayed at startup. Must be a string.
-# injections
+colorStdout : The color for stdout text. Must be a color tuple*.
+colorStderr : The color for stderr text. Must be a color tuple*.
+colorBackground : The background color. Must be a color tuple*.
+bannerGreeting** : The message displayed at startup. Must be a string.
+startupCode** : Python code to be executed at startup. Must be a string.
+availableFonts : Names of avaiable monospaced fonts. This is read only.
 
-Color tuples are tuples containing four positive numbers between 0 and 1.
-
-*Only applies to new windows.
-
-Methods
--------
-availableFonts() : Names of avaiable monospaced fonts.
+*Color tuples are tuples containing four positive numbers between 0 and 1.
+**Only applies to new windows.
 """.strip()
 
 
@@ -152,6 +184,7 @@ class PyREPLSettings(object):
     colorStderr = settingsProperty("colorStderr", settingsColorValidator)
     colorBackground = settingsProperty("colorBackground", settingsColorValidator)
     bannerGreeting = settingsProperty("bannerGreeting", settingsStringValidator)
+    startupCode = settingsProperty("startupCode", settingsStringValidator)
 
     def editorItems(self):
         d = dict(
@@ -165,31 +198,16 @@ class PyREPLSettings(object):
         )
         return d.items()
 
-    def availableFonts(self):
+    def _get_availableFonts(self):
         manager = NSFontManager.sharedFontManager()
         for name in manager.availableFonts():
             font = NSFont.fontWithName_size_(name, 10)
             if font.isFixedPitch():
                 print name
 
+    availableFonts = property(_get_availableFonts)
 
-defaultSettings = dict(
-    bannerGreeting="Welcome to RoboREPL! Type \"help\" for help.",
-    windowWidth=80,
-    windowHeight=24,
-    fontName="QueueMono-Light",
-    fontSize=20,
-    fontLeading=1.2,
-    colorCode=(0, 0, 0, 1),
-    colorStderr=(1, 0, 0, 1),
-    colorStdout=(0, 0, 1, 1),
-    colorBackground=(1, 1, 1, 1),
-    injections={}
-)
-
-try:
-    from mojo import extensions
-
+if inRoboFont:
     defaultStub = "com.typesupply.RoboREPL."
 
     d = {}
@@ -198,13 +216,12 @@ try:
     extensions.registerExtensionsDefaults(d)
 
     def getDefaultValue(key):
-        return extensions.getExtensionDefault(defaultStub + key)
+        return mojo.extensions.getExtensionDefault(defaultStub + key)
 
     def setDefaultValue(key, value):
-        extensions.setExtensionDefault(defaultStub + value)
+        mojo.extensions.setExtensionDefault(defaultStub + value)
 
-except ImportError:
-
+else:
     def getDefaultValue(key):
         return defaultSettings[key]
 
@@ -223,7 +240,7 @@ class PyREPLWindow(object):
         self.w = vanilla.Window((600, 400), "RoboREPL")
         self.w.editor = PyREPLTextEditor((0, 0, 0, 0))
         self.loadSettings()
-        self.w.editor.startSession(settingsManager.bannerGreeting)
+        self.w.editor.startSession(settingsManager.bannerGreeting, settingsManager.startupCode)
 
         window = self.w.getNSWindow()
         window.setBackgroundColor_(NSColor.clearColor())
@@ -409,6 +426,15 @@ class PyREPLTextView(NSTextView):
 
     # Execution
 
+    def runSource_(self, source):
+        save = (sys.stdout, sys.stderr)
+        sys.stdout = self._stdout
+        sys.stderr = self._stderr
+        try:
+            self._console.runsource(source)
+        finally:
+            sys.stdout, sys.stderr = save
+
     def currentLine(self):
         line = self.rawText().splitlines()[-1]
         line = line[len(self._prompt):]
@@ -483,11 +509,13 @@ class PyREPLTextEditor(vanilla.TextEditor):
         self._fontSize = 10
         self._fontLeading = 1.2
 
-    def startSession(self, banner=None):
+    def startSession(self, banner=None, startupCode=None):
         textView = self.getNSTextView()
         if banner:
             textView.writeStdout_(banner)
             textView.writeStdout_("\n")
+        if startupCode:
+            textView.runSource_(startupCode)
         textView.writePrompt()
 
     def getCharacterBox(self):
@@ -532,6 +560,7 @@ class PyREPLTextEditor(vanilla.TextEditor):
         r, g, b, a = value
         return NSColor.colorWithCalibratedRed_green_blue_alpha_(r, g, b, a)
 
+
 # -----------
 # Interpreter
 # -----------
@@ -540,17 +569,15 @@ namespaceInjections = {
     "settings" : settingsManager
 }
 
-try:
-    from mojo import roboFont
+if inRoboFont:
     namespaceInjections.update({
-        "AllFonts" : roboFont.AllFonts,
-        "CurrentFont" : roboFont.CurrentFont,
-        "CurrentGlyph" : roboFont.CurrentGlyph,
-        "OpenFont" : roboFont.OpenFont,
-        "NewFont" : roboFont.NewFont,
+        "AllFonts" : mojo.roboFont.AllFonts,
+        "CurrentFont" : mojo.roboFont.CurrentFont,
+        "CurrentGlyph" : mojo.roboFont.CurrentGlyph,
+        "OpenFont" : mojo.roboFont.OpenFont,
+        "NewFont" : mojo.roboFont.NewFont,
     })
-except ImportError:
-    pass
+
 
 class PseudoUTF8Output(object):
 
