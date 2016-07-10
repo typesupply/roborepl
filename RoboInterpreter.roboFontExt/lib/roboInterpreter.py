@@ -67,7 +67,6 @@ defaultSettings = dict(
     windowHeight=24,
     fontName="QueueMono-Light",
     fontSize=20,
-    fontLeading=1.2,
     colorCode=(0, 0, 0, 1),
     colorStderr=(1, 0, 0, 1),
     colorStdout=(0, 0, 1, 1),
@@ -137,7 +136,6 @@ windowWidth : The number of characters per line. Must be a positive integer.
 windowHeight : The number of rows per window. Must be a positive integer.
 fontName : The font name. Must be a string.
 fontSize : The font size. Must be a positive number.
-fontLeading : The font leading percentage. Must be a positive number.
 colorCode : The color for code text. Must be a color tuple.
 colorStdout : The color for stdout text. Must be a color tuple*.
 colorStderr : The color for stderr text. Must be a color tuple*.
@@ -182,7 +180,6 @@ class PyREPLSettings(object):
     windowHeight = settingsProperty("windowHeight", settingsWindowSizeValidator)
     fontName = settingsProperty("fontName", settingsStringValidator)
     fontSize = settingsProperty("fontSize", settingsPositiveNumberValidator)
-    fontLeading = settingsProperty("fontLeading", settingsPositiveNumberValidator)
     colorCode = settingsProperty("colorCode", settingsColorValidator)
     colorStdout = settingsProperty("colorStdout", settingsColorValidator)
     colorStderr = settingsProperty("colorStderr", settingsColorValidator)
@@ -194,7 +191,6 @@ class PyREPLSettings(object):
         d = dict(
             fontName=self.fontName,
             fontSize=self.fontSize,
-            fontLeading=self.fontLeading,
             colorCode=self.colorCode,
             colorStdout=self.colorStdout,
             colorStderr=self.colorStderr,
@@ -276,7 +272,6 @@ class PyREPLWindow(BaseWindowController):
         editorMethods = dict(
             fontName=self.w.editor.setFontName,
             fontSize=self.w.editor.setFontSize,
-            fontLeading=self.w.editor.setFontLeading,
             colorCode=self.w.editor.setCodeColor,
             colorStdout=self.w.editor.setStdoutColor,
             colorStderr=self.w.editor.setStderrColor,
@@ -284,7 +279,7 @@ class PyREPLWindow(BaseWindowController):
         )
         if key in editorMethods:
             editorMethods[key](value)
-        if key in ("fontName", "fontSize", "fontLeading", "windowWidth", "windowHeight"):
+        if key in ("fontName", "fontSize", "windowWidth", "windowHeight"):
             x, y, w, h = self.w.getPosSize()
             w, h = self.w.editor.getCharacterBox()
             width = w * settingsManager.windowWidth
@@ -332,7 +327,6 @@ class PyREPLTextView(NSTextView):
         self._codeColor = NSColor.blackColor()
         self._stderrColor = NSColor.blackColor()
         self._stdoutColor = NSColor.blackColor()
-        self._lineHeight = 30
 
         self._console = InteractiveConsole(locals=namespaceInjections)
         self._stderr = PseudoUTF8Output(self.writeStderr_)
@@ -352,13 +346,7 @@ class PyREPLTextView(NSTextView):
         font = self.font()
         glyph = font.glyphWithName_("space")
         glyphWidth = font.advancementForGlyph_(glyph).width
-        return glyphWidth, self._lineHeight * self.font().pointSize()
-
-    def setFontLeading_(self, value):
-        self._lineHeight = value
-        paragraphStyle = NSMutableParagraphStyle.alloc().init()
-        paragraphStyle.setLineHeightMultiple_(self._lineHeight)
-        self.setDefaultParagraphStyle_(paragraphStyle)
+        return glyphWidth, self.font().pointSize()
 
     def setCodeColor_(self, color):
         self._codeColor = color
@@ -542,7 +530,6 @@ class PyREPLTextEditor(vanilla.TextEditor):
         scrollView.setBorderType_(NSNoBorder)
         self._fontName = "Menlo-Regular"
         self._fontSize = 10
-        self._fontLeading = 1.2
 
     def startSession(self, banner=None, startupCode=None):
         textView = self.getNSTextView()
@@ -564,16 +551,11 @@ class PyREPLTextEditor(vanilla.TextEditor):
         self._fontSize = value
         self._updateFont()
 
-    def setFontLeading(self, value):
-        self._fontLeading = value
-        self._updateFont()
-
     def _updateFont(self):
         view = self.getNSTextView()
         font = NSFont.fontWithName_size_(self._fontName, self._fontSize)
         if font is not None:
             view.setFont_(font)
-        view.setFontLeading_(self._fontSize * self._fontLeading)
 
     def setCodeColor(self, value):
         color = self._makeColor(value)
