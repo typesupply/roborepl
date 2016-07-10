@@ -9,7 +9,6 @@ settings : An editor settings manager. Type "settings.help" for documentation.
 
 To Do:
 ------
-- finish settings
 - rename extension
 - cursor drawing
 - universal leading
@@ -123,7 +122,7 @@ class settingsProperty(object):
             if not valid:
                 raise PyREPLSettingsError("%s must be the right value type." % self.key)
         setDefaultValue(self.key, value)
-        obj.postNotification({self.key : value})
+        obj.postNotification(data={self.key : value})
 
 
 settingsManagerDoc = """
@@ -147,6 +146,11 @@ bannerGreeting** : The message displayed at startup. Must be a string.
 startupCode** : Python code to be executed at startup. Must be a string.
 availableFonts : Names of avaiable monospaced fonts. This is read only.
 
+Methods
+-------
+
+editStartupCode() : Edit the startup code.
+
 *Color tuples are tuples containing four positive numbers between 0 and 1.
 **Only applies to new windows.
 """.strip()
@@ -165,14 +169,14 @@ class PyREPLSettings(object):
 
     help = property(_get_help)
 
-    def addObserver(self, obj, methodName):
-        self._dispatcher.addObserver(obj, methodName, observable=self)
+    def addObserver(self, obj, methodName, notification="PyREPL.SettingsChanged"):
+        self._dispatcher.addObserver(obj, methodName, notification=notification, observable=self)
 
-    def removeObserver(self, obj):
-        self._dispatcher.removeObserver(obj, None, self)
+    def removeObserver(self, obj, notification="PyREPL.SettingsChanged"):
+        self._dispatcher.removeObserver(obj, notification, self)
 
-    def postNotification(self, data):
-        self._dispatcher.postNotification("PyREPL.SettingsChanged", self, data)
+    def postNotification(self, notification="PyREPL.SettingsChanged", data=None):
+        self._dispatcher.postNotification(notification, self, data)
 
     windowWidth = settingsProperty("windowWidth", settingsWindowSizeValidator)
     windowHeight = settingsProperty("windowHeight", settingsWindowSizeValidator)
@@ -207,6 +211,10 @@ class PyREPLSettings(object):
 
     availableFonts = property(_get_availableFonts)
 
+    def editStartupCode(self):
+        self.postNotification(notification="PyREPL.ShowStartupCodeEditor")
+
+
 if inRoboFont:
     defaultStub = "com.typesupply.RoboREPL."
 
@@ -234,7 +242,7 @@ settingsManager = PyREPLSettings()
 # Window
 # ------
 
-class PyREPLWindow(object):
+class PyREPLWindow(BaseWindowController):
 
     def __init__(self):
         self.w = vanilla.Window((600, 400), "RoboREPL")
@@ -246,12 +254,14 @@ class PyREPLWindow(object):
         window.setBackgroundColor_(NSColor.clearColor())
 
         settingsManager.addObserver(self, "settingsChangedCallback")
+        settingsManager.addObserver(self, "showStartupCodeEditorCallback", "PyREPL.ShowStartupCodeEditor")
         self.w.bind("close", self.windowClosedCallback)
 
         self.w.open()
 
     def windowClosedCallback(self, sender):
         settingsManager.removeObserver(self)
+        settingsManager.removeObserver(self, notification="PyREPL.ShowStartupCodeEditor")
 
     def loadSettings(self):
         class DummyNotification(object): pass
@@ -279,8 +289,29 @@ class PyREPLWindow(object):
             w, h = self.w.editor.getCharacterBox()
             width = w * settingsManager.windowWidth
             height = h * settingsManager.windowHeight
-            self.w.setPosSize((x, y, width, height), animate=True)
+            self.w.setPosSize((x, y, width, height), animate=False)
 
+    def showStartupCodeEditorCallback(self, notification):
+        PyREPLStatupCodeEditor(self.w)
+
+
+class PyREPLStatupCodeEditor(object):
+
+    def __init__(self, parentWindow):
+        self.w = vanilla.Sheet((500, 600), minSize=(300, 300), parentWindow=parentWindow)
+        self.w.editor = vanilla.TextEditor((15, 15, -15, -50), settingsManager.startupCode)
+        self.w.cancelButton = vanilla.Button((-165, -35, -95, 20), "Cancel", callback=self.cancelButtonCallback)
+        self.w.applyButton = vanilla.Button((-85, -35, -15, 20), "Apply", callback=self.applyButtonCallback)
+        self.w.cancelButton.bind(".", ["command"])
+        self.w.open()
+
+    def cancelButtonCallback(self, sender):
+        self.w.close()
+
+    def applyButtonCallback(self, sender):
+        text = self.w.editor.get()
+        settingsManager.startupCode = text
+        self.w.close()
 
 # ------
 # Editor
