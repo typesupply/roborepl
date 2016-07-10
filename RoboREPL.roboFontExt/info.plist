@@ -11,7 +11,7 @@
 			<string>Open</string>
 			<key>shortKey</key>
 			<array>
-				<integer>1703936</integer>
+				<integer>1179648</integer>
 				<string>R</string>
 			</array>
 		</dict>
@@ -27,9 +27,9 @@
 	<key>mainScript</key>
 	<string></string>
 	<key>name</key>
-	<string>RoboInterpreter</string>
+	<string>RoboREPL</string>
 	<key>timeStamp</key>
-	<real>1467993545.022141</real>
+	<real>1468175278.5651491</real>
 	<key>version</key>
 	<string>0.1</string>
 </dict>
