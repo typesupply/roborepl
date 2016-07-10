@@ -299,7 +299,11 @@ class PyREPLStatupCodeEditor(object):
 
     def __init__(self, parentWindow):
         self.w = vanilla.Sheet((500, 600), minSize=(300, 300), parentWindow=parentWindow)
-        self.w.editor = vanilla.TextEditor((15, 15, -15, -50), settingsManager.startupCode)
+        if inRoboFont:
+            from lib.scripting.codeEditor import CodeEditor as codeEditorClass
+        else:
+            codeEditorClass = vanilla.TextEditor
+        self.w.editor = codeEditorClass((15, 15, -15, -50), settingsManager.startupCode)
         self.w.cancelButton = vanilla.Button((-165, -35, -95, 20), "Cancel", callback=self.cancelButtonCallback)
         self.w.applyButton = vanilla.Button((-85, -35, -15, 20), "Apply", callback=self.applyButtonCallback)
         self.w.cancelButton.bind(".", ["command"])
@@ -348,10 +352,13 @@ class PyREPLTextView(NSTextView):
         font = self.font()
         glyph = font.glyphWithName_("space")
         glyphWidth = font.advancementForGlyph_(glyph).width
-        return glyphWidth, self._lineHeight
+        return glyphWidth, self._lineHeight * self.font().pointSize()
 
     def setFontLeading_(self, value):
         self._lineHeight = value
+        paragraphStyle = NSMutableParagraphStyle.alloc().init()
+        paragraphStyle.setLineHeightMultiple_(self._lineHeight)
+        self.setDefaultParagraphStyle_(paragraphStyle)
 
     def setCodeColor_(self, color):
         self._codeColor = color
@@ -420,12 +427,9 @@ class PyREPLTextView(NSTextView):
     # Output
 
     def makeAttributedString_withColor_(self, text, color):
-        paragraphStyle = NSMutableParagraphStyle.alloc().init()
-        paragraphStyle.setLineSpacing_(self._lineHeight - self.font().pointSize())
         attrs = {
             NSForegroundColorAttributeName : color,
-            NSFontAttributeName : self.font(),
-            NSParagraphStyleAttributeName : paragraphStyle
+            NSFontAttributeName : self.font()
         }
         text = NSAttributedString.alloc().initWithString_attributes_(
             text,
