@@ -8,6 +8,20 @@
 
 - RF code key commands
 - completion
+
+settings
+    bannerVersion
+    bannerCopyright
+    bannerGreeting
+    fontName = string
+    fontSize = number
+    fontLeading = number
+    colorCode = (color)
+    colorStderr = (color)
+    colorStdout = (color)
+    colorBackground = (color)
+    injections = {variable : code}
+    availableFonts()
 """
 
 # This was inspired by the PyObjC PyInterpreter demo.
@@ -71,8 +85,8 @@ class PyInterpreterTextView(NSTextView):
         self.setStdoutColor_(NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 1))
         self.setStderrColor_(NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 0, 0, 1))
         self.setBackgroundColor_(NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 0, 0.9))
-        self._editorParagraphStyle = NSMutableParagraphStyle.alloc().init()
 
+        self._lineHeight = 30
         self._console = InteractiveConsole(locals=locals)
         self._stderr = PseudoUTF8Output(self.writeStderr_)
         self._stdout = PseudoUTF8Output(self.writeStdout_)
@@ -97,7 +111,7 @@ class PyInterpreterTextView(NSTextView):
     def setFont_(self, font):
         glyph = font.glyphWithName_("space")
         self._glyphWidth = font.advancementForGlyph_(glyph).width
-        self._lineHeight = font.pointSize() + font.leading()
+        self._lineHeight = font.pointSize() * 1.5
         return super(PyInterpreterTextView, self).setFont_(font)
 
     def setCodeColor_(self, color):
@@ -167,9 +181,12 @@ class PyInterpreterTextView(NSTextView):
     # Output
 
     def makeAttributedString_withColor_(self, text, color):
+        paragraphStyle = NSMutableParagraphStyle.alloc().init()
+        paragraphStyle.setLineSpacing_(self._lineHeight - self.font().pointSize())
         attrs = {
             NSForegroundColorAttributeName : color,
-            NSFontAttributeName : self.font()
+            NSFontAttributeName : self.font(),
+            NSParagraphStyleAttributeName : paragraphStyle
         }
         text = NSAttributedString.alloc().initWithString_attributes_(
             text,
