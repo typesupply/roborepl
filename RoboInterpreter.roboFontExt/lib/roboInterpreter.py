@@ -5,7 +5,7 @@ RoboREPL 0.0 alphamcalpha
 Namespace Injections
 --------------------
 help : This.
-settings : An editor settings manager. Type settings.help for documentation.
+settings : An editor settings manager. Type "settings.help" for documentation.
 
 To Do:
 ------
@@ -107,12 +107,12 @@ colorCode : The color for code text. Must be a color tuple.
 colorStdout : The color for stdout text. Must be a color tuple.
 colorStderr : The color for stderr text. Must be a color tuple.
 colorBackground : The background color. Must be a color tuple.
-# bannerVersion
-# bannerCopyright
-# bannerGreeting
+bannerGreeting* : The message displayed at startup. Must be a string.
 # injections
 
 Color tuples are tuples containing four positive numbers between 0 and 1.
+
+*Only applies to new windows.
 
 Methods
 -------
@@ -126,7 +126,7 @@ class PyREPLSettings(object):
         self._dispatcher = NotificationCenter()
 
     def __repr__(self):
-        return "<Editor Settings Manager. Type settings.help for documentation.>"
+        return "<Editor Settings Manager. Type \"settings.help\" for documentation.>"
 
     def _get_help(self):
         print settingsManagerDoc
@@ -151,6 +151,7 @@ class PyREPLSettings(object):
     colorStdout = settingsProperty("colorStdout", settingsColorValidator)
     colorStderr = settingsProperty("colorStderr", settingsColorValidator)
     colorBackground = settingsProperty("colorBackground", settingsColorValidator)
+    bannerGreeting = settingsProperty("bannerGreeting", settingsStringValidator)
 
     def editorItems(self):
         d = dict(
@@ -173,9 +174,7 @@ class PyREPLSettings(object):
 
 
 defaultSettings = dict(
-    bannerVersion=False,
-    bannerCopyright=False,
-    bannerGreeting="",
+    bannerGreeting="Welcome to RoboREPL! Type \"help\" for help.",
     windowWidth=80,
     windowHeight=24,
     fontName="QueueMono-Light",
@@ -224,6 +223,7 @@ class PyREPLWindow(object):
         self.w = vanilla.Window((600, 400), "RoboREPL")
         self.w.editor = PyREPLTextEditor((0, 0, 0, 0))
         self.loadSettings()
+        self.w.editor.startSession(settingsManager.bannerGreeting)
 
         window = self.w.getNSWindow()
         window.setBackgroundColor_(NSColor.clearColor())
@@ -476,13 +476,19 @@ class PyREPLTextEditor(vanilla.TextEditor):
     def __init__(self, *args, **kwargs):
         super(PyREPLTextEditor, self).__init__(*args, **kwargs)
         textView = self.getNSTextView()
-        textView.writePrompt()
         scrollView = self.getNSScrollView()
         scrollView.setDrawsBackground_(False)
         scrollView.setBorderType_(NSNoBorder)
         self._fontName = "Menlo-Regular"
         self._fontSize = 10
         self._fontLeading = 1.2
+
+    def startSession(self, banner=None):
+        textView = self.getNSTextView()
+        if banner:
+            textView.writeStdout_(banner)
+            textView.writeStdout_("\n")
+        textView.writePrompt()
 
     def getCharacterBox(self):
         return self.getNSTextView().getCharacterBox()
