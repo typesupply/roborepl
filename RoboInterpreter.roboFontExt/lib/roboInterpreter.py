@@ -24,7 +24,7 @@ settings
     availableFonts()
 """
 
-# This was inspired by the PyObjC PyInterpreter demo.
+# This was inspired by the PyObjC PyREPL demo.
 
 import sys
 from code import InteractiveConsole
@@ -54,10 +54,10 @@ except ImportError:
     locals = {}
 
 
-class PyInterpreterWindow(object):
+class PyREPLWindow(object):
 
     def __init__(self):
-        editor = PyInterpreterTextEditor((0, 0, 0, 0))
+        editor = PyREPLTextEditor((0, 0, 0, 0))
         w, h = editor.getNSTextView().getConsoleSize()
 
         self.w = vanilla.Window((w + 10, h + 10))
@@ -73,10 +73,10 @@ class PyInterpreterWindow(object):
 # Editor
 # ------
 
-class PyInterpreterTextView(NSTextView):
+class PyREPLTextView(NSTextView):
 
     def init(self):
-        self = super(PyInterpreterTextView, self).init()
+        self = super(PyREPLTextView, self).init()
         self.setDelegate_(self)
 
         self.setDrawsBackground_(True)
@@ -112,7 +112,7 @@ class PyInterpreterTextView(NSTextView):
         glyph = font.glyphWithName_("space")
         self._glyphWidth = font.advancementForGlyph_(glyph).width
         self._lineHeight = font.pointSize() * 1.5
-        return super(PyInterpreterTextView, self).setFont_(font)
+        return super(PyREPLTextView, self).setFont_(font)
 
     def setCodeColor_(self, color):
         self._codeColor = color
@@ -139,7 +139,7 @@ class PyInterpreterTextView(NSTextView):
         if event.modifierFlags() & NSCommandKeyMask and event.characters() == "k":
             self.clear()
         else:
-            return super(PyInterpreterTextView, self).keyDown_(event)
+            return super(PyREPLTextView, self).keyDown_(event)
 
     def insertNewline_(self, sender):
         line = self.currentLine()
@@ -274,12 +274,12 @@ class PyInterpreterTextView(NSTextView):
         return [], 0
 
 
-class PyInterpreterTextEditor(vanilla.TextEditor):
+class PyREPLTextEditor(vanilla.TextEditor):
 
-    nsTextViewClass = PyInterpreterTextView
+    nsTextViewClass = PyREPLTextView
 
     def __init__(self, *args, **kwargs):
-        super(PyInterpreterTextEditor, self).__init__(*args, **kwargs)
+        super(PyREPLTextEditor, self).__init__(*args, **kwargs)
         textView = self.getNSTextView()
         textView.writePrompt()
         scrollView = self.getNSScrollView()
@@ -316,4 +316,4 @@ class PseudoUTF8Output(object):
 
 if __name__ == "__main__":
     from vanilla.test.testTools import executeVanillaTest
-    executeVanillaTest(PyInterpreterWindow)
+    executeVanillaTest(PyREPLWindow)
