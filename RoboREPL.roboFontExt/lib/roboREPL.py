@@ -6,12 +6,6 @@ Namespace Injections
 --------------------
 help : This.
 settings : An editor settings manager. Type "settings.help" for documentation.
-
-To Do
------
-- cmd-k doesn't work in RF
-- universal leading
-- completion
 """.strip()
 
 # This was inspired by the PyObjC Interpreter demo.
@@ -521,6 +515,7 @@ class PyREPLTextView(NSTextView):
         self.writeLine_withColor_(text, self._stdoutColor)
 
     def clear(self):
+        self._minInsertionPoint = 0
         self.setString_("")
         self.writePrompt()
 
