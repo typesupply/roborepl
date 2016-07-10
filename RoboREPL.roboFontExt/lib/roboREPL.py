@@ -10,8 +10,6 @@ settings : An editor settings manager. Type "settings.help" for documentation.
 To Do
 -----
 - cmd-k doesn't work in RF
-- rename extension
-- cursor drawing
 - universal leading
 - completion
 """.strip()
@@ -392,6 +390,7 @@ class PyREPLTextView(NSTextView):
         self._codeColor = NSColor.blackColor()
         self._stderrColor = NSColor.blackColor()
         self._stdoutColor = NSColor.blackColor()
+        self._glyphWidth = 1
 
         self._console = InteractiveConsole(locals=namespaceInjections)
         self._stderr = PseudoUTF8Output(self.writeStderr_)
@@ -412,11 +411,16 @@ class PyREPLTextView(NSTextView):
     def setTabString_(self, value):
         self._tabString = value
 
+    def setFont_(self, value):
+        super(PyREPLTextView, self).setFont_(value)
+        self.getCharacterBox()
+
     def getCharacterBox(self):
         font = self.font()
         glyph = font.glyphWithName_("space")
         glyphWidth = font.advancementForGlyph_(glyph).width
-        return glyphWidth, self.font().pointSize()
+        self._glyphWidth = glyphWidth
+        return glyphWidth, font.pointSize()
 
     def setCodeColor_(self, color):
         self._codeColor = color
@@ -575,15 +579,18 @@ class PyREPLTextView(NSTextView):
             return False
         return True
 
-    # def drawInsertionPointInRect_color_turnedOn_(self, rect, color, turnedOn):
-    #     (x, y), (w, h) = rect
-    #     w = self._glyphWidth
-    #     rect = ((x, y), (w, h))
-    #     if turnedOn:
-    #         color.set()
-    #         NSRectFill(rect)
-    #     else:
-    #         self.setNeedsDisplayInRect_avoidAdditionalLayout_(rect, False)
+    def drawInsertionPointInRect_color_turnedOn_(self, rect, color, turnedOn):
+        if hasattr(self, "_glyphWidth"):
+            (x, y), (w, h) = rect
+            w = self._glyphWidth
+            rect = ((x, y), (w, h))
+        super(PyREPLTextView, self).drawInsertionPointInRect_color_turnedOn_(rect, color, turnedOn)
+
+    def setNeedsDisplayInRect_(self, rect):
+        # https://gist.github.com/koenbok/a1b8d942977f69ff102b
+        if hasattr(self, "_glyphWidth"):
+            rect.size.width += self._glyphWidth - 1;
+        super(PyREPLTextView, self).setNeedsDisplayInRect_(rect)
 
     # Auto Completion
 
