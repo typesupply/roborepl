@@ -13,13 +13,7 @@ To Do
 - rename extension
 - cursor drawing
 - universal leading
-- RF code key commands
 - completion
-- themes
-    - basic
-    - classic
-    - robofog
-- use a floating panel
 """.strip()
 
 # This was inspired by the PyObjC Interpreter demo.
@@ -74,12 +68,33 @@ defaultSettings = dict(
     tabString="  ",
     fontName="QueueMono-Light",
     fontSize=20,
-    colorCode=(0, 0, 0, 1),
-    colorStderr=(1, 0, 0, 1),
-    colorStdout=(0, 0, 1, 1),
-    colorBackground=(1, 1, 1, 1),
-    startupCode=defaultStartupCode
+    startupCode=defaultStartupCode,
+    userThemes={}
 )
+
+defaultThemes = dict(
+    default=dict(
+        colorCode=(0, 0, 0, 1),
+        colorStderr=(1, 0, 0, 1),
+        colorStdout=(0, 0, 1, 1),
+        colorBackground=(1, 1, 1, 1)
+    ),
+    classic=dict(
+        colorCode=(0, 1, 0, 1),
+        colorStderr=(1, 0, 0, 1),
+        colorStdout=(1, 1, 1, 1),
+        colorBackground=(0, 0, 0, 0.8)
+    ),
+    robofog=dict(
+        colorCode=(0, 0, 0, 1),
+        colorStderr=(0, 0, 0, 1),
+        colorStdout=(0, 0, 0, 1),
+        colorBackground=(1, 1, 1, 1)
+    )
+)
+
+defaultSettings.update(defaultThemes["default"])
+
 
 class PyREPLSettingsError(Exception): pass
 
@@ -155,6 +170,8 @@ availableFonts : Names of avaiable monospaced fonts. This is read only.
 Methods
 -------
 editStartupCode() : Edit the startup code.
+loadTheme("name") : Load a theme. The defaults are "default", "classic" and "robofog".
+saveTheme("name") : Save the current theme. This can then be loaded with "settings.loadTheme".
 
 *Color tuples are tuples containing four positive numbers between 0 and 1.
 **Only applies to new windows.
@@ -170,9 +187,12 @@ class PyREPLSettings(object):
         return "<Editor Settings Manager. Type \"settings.help\" for documentation.>"
 
     def _get_help(self):
+        # LOL. This is probably very illegal.
         print settingsManagerDoc
 
     help = property(_get_help)
+
+    # Notifications
 
     def addObserver(self, obj, methodName, notification="PyREPL.SettingsChanged"):
         self._dispatcher.addObserver(obj, methodName, notification=notification, observable=self)
@@ -182,6 +202,8 @@ class PyREPLSettings(object):
 
     def postNotification(self, notification="PyREPL.SettingsChanged", data=None):
         self._dispatcher.postNotification(notification, self, data)
+
+    # Properties
 
     windowWidth = settingsProperty("windowWidth", settingsWindowSizeValidator)
     windowHeight = settingsProperty("windowHeight", settingsWindowSizeValidator)
@@ -207,6 +229,8 @@ class PyREPLSettings(object):
         )
         return d.items()
 
+    # Fonts
+
     def _get_availableFonts(self):
         manager = NSFontManager.sharedFontManager()
         for name in manager.availableFonts():
@@ -216,8 +240,38 @@ class PyREPLSettings(object):
 
     availableFonts = property(_get_availableFonts)
 
+    # Startup Code
+
     def editStartupCode(self):
         self.postNotification(notification="PyREPL.ShowStartupCodeEditor")
+
+    # Themes
+
+    def loadTheme(self, name):
+        userThemes = getDefaultValue("userThemes")
+        if name in userThemes:
+            theme = userThemes[name]
+        elif name in defaultThemes:
+            theme = defaultThemes[name]
+        else:
+            raise PyREPLSettingsError("No theme named %r." % name)
+        self.colorCode = theme["colorCode"]
+        self.colorStdout = theme["colorStdout"]
+        self.colorStderr = theme["colorStderr"]
+        self.colorBackground = theme["colorBackground"]
+
+    def saveTheme(self, name):
+        if not settingsStringValidator(name):
+            raise PyREPLSettingsError("Theme names must be strings.")
+        theme = dict(
+            colorCode=self.colorCode,
+            colorStderr=self.colorStderr,
+            colorStdout=colorStdout,
+            colorBackground=colorBackground
+        )
+        userThemes = getDefaultValue("userThemes")
+        userThemes[name] = theme
+        setDefaultValue("userThemes", userThemes)
 
 
 if inRoboFont:
