@@ -1,4 +1,4 @@
 from mojo.roboFont import OpenWindow
-from roboInterpreter import PyREPLWindow
+from roboREPL import PyREPLWindow
 
 OpenWindow(PyREPLWindow)
