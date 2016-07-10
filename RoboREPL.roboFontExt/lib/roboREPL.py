@@ -1,6 +1,6 @@
 documentation = """
-RoboREPL 0.0 alphamcalpha
-=========================
+RoboREPL 0.1
+============
 
 Namespace Injections
 --------------------
