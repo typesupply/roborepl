@@ -7,13 +7,16 @@ Namespace Injections
 help : This.
 settings : An editor settings manager. Type "settings.help" for documentation.
 
-To Do:
-------
+To Do
+-----
+- cmd-k doesn't work in RF
 - rename extension
 - cursor drawing
 - universal leading
 - RF code key commands
 - completion
+- themes
+- use a floating panel
 """.strip()
 
 # This was inspired by the PyObjC Interpreter demo.
@@ -53,7 +56,7 @@ defaultStartupCode = """
 """.lstrip()
 
 if inRoboFont:
-    settings += """
+    defaultStartupCode += """
 CF = CurrentFont
 CG = CurrentGlyph
 AF = AllFonts
@@ -146,7 +149,6 @@ availableFonts : Names of avaiable monospaced fonts. This is read only.
 
 Methods
 -------
-
 editStartupCode() : Edit the startup code.
 
 *Color tuples are tuples containing four positive numbers between 0 and 1.
@@ -217,13 +219,13 @@ if inRoboFont:
     d = {}
     for k, v in defaultSettings.items():
         d[defaultStub + k] = v
-    extensions.registerExtensionsDefaults(d)
+    mojo.extensions.registerExtensionDefaults(d)
 
     def getDefaultValue(key):
         return mojo.extensions.getExtensionDefault(defaultStub + key)
 
     def setDefaultValue(key, value):
-        mojo.extensions.setExtensionDefault(defaultStub + value)
+        mojo.extensions.setExtensionDefault(defaultStub + key, value)
 
 else:
     def getDefaultValue(key):
@@ -293,7 +295,7 @@ class PyREPLWindow(BaseWindowController):
 class PyREPLStatupCodeEditor(object):
 
     def __init__(self, parentWindow):
-        self.w = vanilla.Sheet((500, 600), minSize=(300, 300), parentWindow=parentWindow)
+        self.w = vanilla.Sheet((600, 700), minSize=(300, 300), parentWindow=parentWindow)
         if inRoboFont:
             from lib.scripting.codeEditor import CodeEditor as codeEditorClass
         else:
@@ -537,7 +539,8 @@ class PyREPLTextEditor(vanilla.TextEditor):
             textView.writeStdout_(banner)
             textView.writeStdout_("\n")
         if startupCode:
-            textView.runSource_(startupCode)
+            for line in startupCode.splitlines():
+                textView.runSource_(line)
         textView.writePrompt()
 
     def getCharacterBox(self):
