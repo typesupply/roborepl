@@ -74,7 +74,7 @@ defaultThemes = dict(
     default=dict(
         colorCode=(0, 0, 0, 1),
         colorStderr=(1, 0, 0, 1),
-        colorStdout=(1, 1, 1, 1),
+        colorStdout=(0, 0, 1, 1),
         colorBackground=(1, 1, 1, 1)
     ),
     classic=dict(
