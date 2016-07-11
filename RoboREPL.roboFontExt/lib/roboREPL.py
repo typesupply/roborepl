@@ -416,6 +416,15 @@ class PyREPLTextView(NSTextView):
 
         self.setDrawsBackground_(True)
 
+        self.setAutomaticQuoteSubstitutionEnabled_(False)
+        self.setAutomaticLinkDetectionEnabled_(False)
+        self.setContinuousSpellCheckingEnabled_(False)
+        self.setGrammarCheckingEnabled_(False)
+        self.setAutomaticDashSubstitutionEnabled_(False)
+        self.setAutomaticDataDetectionEnabled_(False)
+        self.setAutomaticSpellingCorrectionEnabled_(False)
+        self.setAutomaticTextReplacementEnabled_(False)
+
         self._codeColor = NSColor.blackColor()
         self._stderrColor = NSColor.blackColor()
         self._stdoutColor = NSColor.blackColor()
