@@ -6,10 +6,8 @@ RoboREPL 0.1
 An interactive Python interpreter for RoboFont.
 You type some code in it and it will be executed.
 
-Namespace Injections
---------------------
-help : This.
-settings : An editor settings manager. Type "settings.help" for documentation.
+To get help, type `help`, but you already figured that out.
+To learn about changing settings, type `settings.help`.
 """.strip()
 
 # This was inspired by the PyObjC Interpreter demo.
@@ -143,34 +141,67 @@ class settingsProperty(object):
 
 
 settingsManagerDoc = """
-=========================
-RoboREPL Settings Manager
-=========================
+=================
+RoboREPL Settings
+=================
 
-Attributes
-----------
-help : This.
-tabString : Whitespace to insert when the tab key is pressed. Must be a string.
-windowWidth : The number of characters per line. Must be a positive integer.
-windowHeight : The number of rows per window. Must be a positive integer.
-fontName : The font name. Must be a string.
-fontSize : The font size. Must be a positive number.
-colorCode : The color for code text. Must be a color tuple.
-colorStdout : The color for stdout text. Must be a color tuple*.
-colorStderr : The color for stderr text. Must be a color tuple*.
-colorBackground : The background color. Must be a color tuple*.
-bannerGreeting** : The message displayed at startup. Must be a string.
-startupCode** : Python code to be executed at startup. Must be a string.
-availableFonts : Names of avaiable monospaced fonts. This is read only.
+All settings are handled through the `settings` object.
+You get a setting like this:
 
-Methods
--------
-editStartupCode() : Edit the startup code.
+>>> settings.fontSize
+20
+
+You set a settings like this:
+
+>>> settings.fontSize = 15
+
+Available Settings
+------------------
+
+- Window Settings
+settings.windowWidth : The number of characters per line. Must be a positive integer.
+settings.windowHeight : The number of rows per window. Must be a positive integer.
+
+- Fonts
+settings.fontName : The font name. Must be a string.
+settings.fontSize : The font size. Must be a positive number.
+settings.availableFonts : Names of installed monospaced fonts. This is read only.
+
+- Colors
+settings.colorCode : The color for code text. Must be a color tuple.
+settings.colorStdout : The color for stdout text. Must be a color tuple*.
+settings.colorStderr : The color for stderr text. Must be a color tuple*.
+settings.colorBackground : The background color. Must be a color tuple*.
+
+- Themes
 loadTheme("name") : Load a theme. The defaults are "default", "classic" and "robofog".
 saveTheme("name") : Save the current theme. This can then be loaded with "settings.loadTheme".
 
+- Text
+settings.tabString : Whitespace to insert when the tab key is pressed. Must be a string.
+settings.bannerGreeting** : The message displayed at startup. Must be a string.
+
+- Startup Code
+settings.startupCode** : Python code to be executed at startup. Must be a string.
+editStartupCode() : Edit the startup code.
+
 *Color tuples are tuples containing four positive numbers between 0 and 1.
 **Only applies to new windows.
+
+Example
+-------
+>>> settings.loadTheme("classic")
+>>> settings.colorCode = (0, 0, 1, 1)
+>>> settings.colorStdrr
+(1, 0, 0, 1)
+>>> settings.saveTheme("mine")
+>>> settings.availableFonts
+Menlo-Regular
+MyOwnMono-Regular
+>>> settings.fontName = "MyOwnMono-Regular"
+>>> settings.fontSize
+20
+>>> settings.fontSize = 12
 """.strip()
 
 
