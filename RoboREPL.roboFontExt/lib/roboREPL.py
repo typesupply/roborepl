@@ -293,8 +293,8 @@ class PyREPLSettings(object):
         theme = dict(
             colorCode=self.colorCode,
             colorStderr=self.colorStderr,
-            colorStdout=colorStdout,
-            colorBackground=colorBackground
+            colorStdout=self.colorStdout,
+            colorBackground=self.colorBackground
         )
         userThemes = getDefaultValue("userThemes")
         userThemes[name] = theme
