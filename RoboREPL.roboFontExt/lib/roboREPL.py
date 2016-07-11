@@ -1,6 +1,10 @@
 documentation = """
+============
 RoboREPL 0.1
 ============
+
+An interactive Python interpreter for RoboFont.
+You type some code in it and it will be executed.
 
 Namespace Injections
 --------------------
@@ -395,7 +399,7 @@ class PyREPLTextView(NSTextView):
 
         self._minInsertionPoint = 0
 
-        self._history = [""]
+        self._history = []
         self._historyIndex = 1
 
         return self
@@ -461,22 +465,23 @@ class PyREPLTextView(NSTextView):
 
     def moveDown_(self, sender):
         self._historyIndex += 1
-        if self._historyIndex >= len(self._history):
+        if self._historyIndex > len(self._history):
             self._historyIndex = len(self._history)
             NSBeep()
-        else:
-            self._insertHistoryLine()
+        self._insertHistoryLine()
 
     def moveUp_(self, sender):
         self._historyIndex -= 1
-        if self._historyIndex <= 0:
+        if self._historyIndex < 0:
             self._historyIndex = 0
             NSBeep()
-        else:
-            self._insertHistoryLine()
+        self._insertHistoryLine()
 
     def _insertHistoryLine(self):
-        text = self._history[self._historyIndex]
+        if self._historyIndex == len(self._history):
+            text = ""
+        else:
+            text = self._history[self._historyIndex]
         text = self.makeAttributedString_withColor_(text, self._codeColor)
         begin = self._minInsertionPoint
         length = self.textLength() - begin
@@ -576,15 +581,13 @@ class PyREPLTextView(NSTextView):
 
     def drawInsertionPointInRect_color_turnedOn_(self, rect, color, turnedOn):
         if hasattr(self, "_glyphWidth"):
-            (x, y), (w, h) = rect
-            w = self._glyphWidth
-            rect = ((x, y), (w, h))
+            rect.size.width = self._glyphWidth
         super(PyREPLTextView, self).drawInsertionPointInRect_color_turnedOn_(rect, color, turnedOn)
 
     def setNeedsDisplayInRect_(self, rect):
-        # https://gist.github.com/koenbok/a1b8d942977f69ff102b
+        # Ugh: https://gist.github.com/koenbok/a1b8d942977f69ff102b
         if hasattr(self, "_glyphWidth"):
-            rect.size.width += self._glyphWidth - 1;
+            rect.size.width += self._glyphWidth - 1
         super(PyREPLTextView, self).setNeedsDisplayInRect_(rect)
 
     # Auto Completion
