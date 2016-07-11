@@ -6,8 +6,8 @@ RoboREPL 0.1
 An interactive Python interpreter for RoboFont.
 You type some code in it and it will be executed.
 
-To get help, type `help`, but you already figured that out.
-To learn about changing settings, type `settings.help`.
+To get help, type "help", but you already figured that out.
+To learn about changing settings, type "settings.help".
 """.strip()
 
 # This was inspired by the PyObjC Interpreter demo.
@@ -145,7 +145,7 @@ settingsManagerDoc = """
 RoboREPL Settings
 =================
 
-All settings are handled through the `settings` object.
+All settings are handled through the "settings" object.
 You get a setting like this:
 
 >>> settings.fontSize
