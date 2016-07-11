@@ -21,7 +21,9 @@ Yes. I'm talking about a *little* code. You know, something quick that doesn't w
 Whatever.
 
 > ...
+
 > ...
+
 > ...
 
 > Okay. I kind of see the point, but this readme is **extremely unhelpful**.
@@ -47,7 +49,9 @@ Type `settings.help` and you'll get info about switching the fonts. It's easy.
 > Weirdo.
 
 > ...
+
 > ...
+
 > ...
 
 > How do I clear the window?
