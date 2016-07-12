@@ -1,6 +1,6 @@
 documentation = """
 ============
-RoboREPL 0.1
+RoboREPL 0.2
 ============
 
 An interactive Python interpreter for RoboFont.
