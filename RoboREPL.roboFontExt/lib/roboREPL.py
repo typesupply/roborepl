@@ -13,7 +13,6 @@ To learn about changing settings, type "settings.help".
 # This was inspired by the PyObjC Interpreter demo.
 
 import sys
-import string
 from code import InteractiveConsole
 from defcon.tools.notifications import NotificationCenter
 from AppKit import *
