@@ -1,6 +1,6 @@
-documentation = """
+documentation = u"""
 ============
-RoboREPL 0.2
+RoboREPL 0.3
 ============
 
 An interactive Python interpreter for RoboFont.
@@ -8,6 +8,11 @@ You type some code in it and it will be executed.
 
 To get help, type "help", but you already figured that out.
 To learn about changing settings, type "settings.help".
+
+Key Commands
+------------
+\u2318K : Clear the window.
+\u2318C : Copy the latest stdout/stderr output to the pasteboard.
 """.strip()
 
 # This was inspired by the PyObjC Interpreter demo.
