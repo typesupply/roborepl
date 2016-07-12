@@ -434,6 +434,7 @@ class PyREPLTextView(NSTextView):
         self._stderr = PseudoUTF8Output(self.writeStderr_)
         self._stdout = PseudoUTF8Output(self.writeStdout_)
         self._prompt = sys.ps1
+        self.previousOutput = ""
 
         self._tabString = "  "
 
@@ -489,6 +490,11 @@ class PyREPLTextView(NSTextView):
     def keyDown_(self, event):
         if event.modifierFlags() & NSCommandKeyMask and event.characters() == "k":
             self.clear()
+        elif event.modifierFlags() & NSCommandKeyMask and event.characters() == "c":
+            pb = NSPasteboard.generalPasteboard()
+            pb.clearContents()
+            a = NSArray.arrayWithObject_(self.previousOutput)
+            pb.writeObjects_(a)
         else:
             return super(PyREPLTextView, self).keyDown_(event)
 
@@ -587,7 +593,7 @@ class PyREPLTextView(NSTextView):
             return
         self._history.append(line)
         self._historyIndex = len(self._history)
-        save = (sys.stdout, sys.stderr)
+        save = (sys.stdout, sys.stderr, self.rawText())
         sys.stdout = self._stdout
         sys.stderr = self._stderr
         more = False
@@ -600,7 +606,8 @@ class PyREPLTextView(NSTextView):
         except:
             self._prompt = sys.ps1
         finally:
-            sys.stdout, sys.stderr = save
+            sys.stdout, sys.stderr, previousRawText = save
+            self.previousOutput = self.rawText()[len(previousRawText):-1]
 
     # Selection, Insertion Point
 
