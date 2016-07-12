@@ -73,7 +73,7 @@ Yeah, probably. I wrote this thing pretty fast so there are bound to be some pro
 ##### 0.2
 
 - Fixed an issue with OS X's magic replacement of smart quotes, dashes and other stuff.
-- Fixed a bug in `settings.saveTheme("something")
+- Fixed a bug in `settings.saveTheme("something")`.
 
 ##### 0.1
 
