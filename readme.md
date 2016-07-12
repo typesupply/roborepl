@@ -70,6 +70,10 @@ Type `settings.help` and you'll get info about switching the fonts. It's easy.
 
 Yeah, probably. I wrote this thing pretty fast so there are bound to be some problems. Here are the changes I've made in each of the releases. Maybe your bug has been already fixed?
 
+##### 0.3 (Not yet released.)
+
+- ⌘C with no selection will copy the latest stdout/stderr output to the pasteboard.
+
 ##### 0.2
 
 - Fixed an issue with OS X's magic replacement of smart quotes, dashes and other stuff.
