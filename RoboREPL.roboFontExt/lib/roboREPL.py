@@ -515,6 +515,13 @@ class PyREPLTextView(NSTextView):
     def insertTab_(self, sender):
         self.writeLine_withColor_(self._tabString, self._codeColor)
 
+    def insertBacktab_(self, sender):
+        if self.currentLine().endswith(self._tabString):
+            length = len(self._tabString)
+            begin = self.textLength() - length
+            textStorage = self.textStorage()
+            textStorage.deleteCharactersInRange_((begin, length))
+
     def moveDown_(self, sender):
         self._historyIndex += 1
         if self._historyIndex > len(self._history):
