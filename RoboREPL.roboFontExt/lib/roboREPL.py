@@ -342,6 +342,7 @@ class PyREPLWindow(BaseWindowController):
         self.w.editor.startSession(settingsManager.bannerGreeting, settingsManager.startupCode)
 
         window = self.w.getNSWindow()
+        window.setOpaque_(False)
         window.setBackgroundColor_(NSColor.clearColor())
 
         settingsManager.addObserver(self, "settingsChangedCallback")
