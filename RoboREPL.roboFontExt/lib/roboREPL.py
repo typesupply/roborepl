@@ -666,6 +666,23 @@ class PyREPLTextView(NSTextView):
     def textView_completions_forPartialWordRange_indexOfSelectedItem_(self, textView, completions, range, index):
         return [], 0
 
+    # Drop
+
+    def readSelectionFromPasteboard_type_(self, pboard, pbType):
+        if pbType == NSFilenamesPboardType:
+            paths = pboard.propertyListForType_(NSFilenamesPboardType)
+            dropText = ""
+            if len(paths) == 1:
+                dropText = 'u"%s"' % paths[0]
+            else:
+                formattedPaths = []
+                for path in paths:
+                    formattedPaths.append('u"%s"' % path)
+                dropText = "[%s]" % ", ".join(formattedPaths)
+            if dropText:
+                self.insertText_(dropText)
+                return True
+        return super(PyREPLTextView, self).readSelectionFromPasteboard_type_(self, pboard, pbType)
 
 class PyREPLTextEditor(vanilla.TextEditor):
 
