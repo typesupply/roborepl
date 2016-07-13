@@ -73,6 +73,7 @@ Yeah, probably. I wrote this thing pretty fast so there are bound to be some pro
 ##### 0.4 (not yet released)
 
 - Implemented auto completion. Use the ESC key to bring up suggestions.
+- Fixed a drag and drop bug.
 
 ##### 0.3
 
