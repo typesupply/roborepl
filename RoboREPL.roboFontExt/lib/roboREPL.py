@@ -336,7 +336,7 @@ settingsManager = PyREPLSettings()
 class PyREPLWindow(BaseWindowController):
 
     def __init__(self):
-        self.w = vanilla.FloatingWindow((600, 400), "RoboREPL")
+        self.w = vanilla.FloatingWindow((600, 400), "RoboREPL", minSize=(350, 200))
         self.w.editor = PyREPLTextEditor((0, 0, 0, 0))
         self.loadSettings()
         self.w.editor.startSession(settingsManager.bannerGreeting, settingsManager.startupCode)
