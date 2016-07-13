@@ -15,6 +15,7 @@ Key Commands
 \u2318C : Copy the latest stdout/stderr output to the pasteboard.
 TAB : Insert the value defined in settings.tabString at the cusror.
 \u21E7+TAB : Remove the value defined in settings.tabString before the cusror.
+ESC : Display auto-completion suggestions.
 """.strip()
 
 # This was inspired by the PyObjC Interpreter demo.
@@ -41,6 +42,13 @@ try:
     inRoboFont = True
 except ImportError:
     inRoboFont = False
+
+try:
+    import jedi
+    haveJedi = True
+    variableChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_"
+except ImportError:
+    haveJedi = False
 
 # --------
 # Settings
@@ -345,7 +353,11 @@ settingsManager = PyREPLSettings()
 class PyREPLWindow(BaseWindowController):
 
     def __init__(self):
-        self.w = vanilla.FloatingWindow((600, 400), "RoboREPL", minSize=(350, 200))
+        if inRoboFont:
+            windowClass = vanilla.FloatingWindow
+        else:
+            windowClass = vanilla.Window
+        self.w = windowClass((600, 400), "RoboREPL", minSize=(350, 200))
         self.w.editor = PyREPLTextEditor((0, 0, 0, 0))
         self.loadSettings()
         self.w.editor.startSession(settingsManager.bannerGreeting, settingsManager.startupCode)
@@ -670,10 +682,67 @@ class PyREPLTextView(NSTextView):
             rect.size.width += self._glyphWidth - 1
         super(PyREPLTextView, self).setNeedsDisplayInRect_(rect)
 
-    # Auto Completion
+    # Auto Completion (adapted from DrawBot)
 
-    def textView_completions_forPartialWordRange_indexOfSelectedItem_(self, textView, completions, range, index):
-        return [], 0
+    def rangeForUserCompletion(self):
+        charRange = super(PyREPLTextView, self).rangeForUserCompletion()
+        text = self.string()
+        partialString = text.substringWithRange_(charRange)
+        if "." in partialString:
+            dotSplit = partialString.split(".")
+            partialString = dotSplit.pop()
+            move = len(".".join(dotSplit))
+            charRange.location += move + 1
+            charRange.length = len(partialString)
+        for c in partialString:
+            if c not in variableChars:
+                return (NSNotFound, 0)
+        return charRange
+
+    def completionsForPartialWordRange_indexOfSelectedItem_(self, charRange, index):
+        if not haveJedi:
+            return [], 0
+        text = self.string()
+        partialString = text.substringWithRange_(charRange)
+        source = "\n".join(self._history + [self.currentLine()])
+        namespace = self._console.locals
+        script = jedi.Interpreter(source=source, namespaces=[namespace])
+        completions = []
+        for completion in script.completions():
+            name = completion.name
+            completions.append(name)
+        return completions, 0
+
+    def selectionRangeForProposedRange_granularity_(self, proposedRange, granularity):
+        location = proposedRange.location
+        if granularity == NSSelectByWord and proposedRange.length == 0 and location != 0:
+            text = self.string()
+            lenText = len(text)
+            length = 1
+            found = False
+            while not found:
+                location -= 1
+                length += 1
+                if location <= 0:
+                    found = True
+                else:
+                    c = text.substringWithRange_((location, 1))[0]
+                    if c not in variableChars:
+                        location += 1
+                        found = True
+            found = False
+            while not found:
+                length += 1
+                if location + length >= lenText:
+                    found = True
+                else:
+                    c = text.substringWithRange_((location, length))[-1]
+                    if c not in variableChars:
+                        length -= 1
+                        found = True
+            return location, length
+        else:
+            return super(PyREPLTextView, self).selectionRangeForProposedRange_granularity_(proposedRange, granularity)
 
     # Drop
 
