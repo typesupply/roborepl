@@ -432,6 +432,10 @@ class PyREPLTextView(NSTextView):
 
         self.setDrawsBackground_(True)
 
+        paragraphStyle = NSMutableParagraphStyle.alloc().init()
+        paragraphStyle.setLineHeightMultiple_(1.2)
+        self.setDefaultParagraphStyle_(paragraphStyle)
+
         self.setAutomaticQuoteSubstitutionEnabled_(False)
         self.setAutomaticLinkDetectionEnabled_(False)
         self.setContinuousSpellCheckingEnabled_(False)
@@ -474,8 +478,10 @@ class PyREPLTextView(NSTextView):
         font = self.font()
         glyph = font.glyphWithName_("space")
         glyphWidth = font.advancementForGlyph_(glyph).width
+        glyphHeight = font.pointSize() * self.defaultParagraphStyle().lineHeightMultiple()
         self._glyphWidth = glyphWidth
-        return glyphWidth, font.pointSize()
+        self._glyphHeight = glyphHeight
+        return glyphWidth, glyphHeight
 
     def setCodeColor_(self, color):
         self._codeColor = color
@@ -565,7 +571,8 @@ class PyREPLTextView(NSTextView):
     def makeAttributedString_withColor_(self, text, color):
         attrs = {
             NSForegroundColorAttributeName : color,
-            NSFontAttributeName : self.font()
+            NSFontAttributeName : self.font(),
+            NSParagraphStyleAttributeName : self.defaultParagraphStyle()
         }
         text = NSAttributedString.alloc().initWithString_attributes_(
             text,
@@ -685,6 +692,7 @@ class PyREPLTextView(NSTextView):
                 self.insertText_(dropText)
                 return True
         return super(PyREPLTextView, self).readSelectionFromPasteboard_type_(self, pboard, pbType)
+
 
 class PyREPLTextEditor(vanilla.TextEditor):
 

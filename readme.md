@@ -79,6 +79,7 @@ Yeah, probably. I wrote this thing pretty fast so there are bound to be some pro
 - The window can be resized with a mouse drag.
 - Invisible characters can be shown with `settings.showInvisibleCharacters = True`. This relies on the invisible characters being defined in the font. You probably designed the font you are using, so supporting that is your business.
 - Dropping paths from the Finder into the window will format the incoming paths as strings/lists of strings.
+- Put a little lead between lines.
 
 ##### 0.2
 
