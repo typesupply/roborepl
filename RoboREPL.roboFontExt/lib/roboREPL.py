@@ -67,6 +67,7 @@ defaultSettings = dict(
     tabString="  ",
     fontName="Menlo-Regular",
     fontSize=20,
+    showInvisibleCharacters=False,
     startupCode=defaultStartupCode,
     userThemes={}
 )
@@ -97,6 +98,9 @@ defaultSettings.update(defaultThemes["default"])
 
 class PyREPLSettingsError(Exception): pass
 
+
+def settingsBoolValidator(value):
+    return isinstance(value, bool)
 
 def settingsStringValidator(value):
     return isinstance(value, basestring)
@@ -171,6 +175,7 @@ settings.windowHeight : The number of rows per window. Must be a positive intege
 settings.fontName : The font name. Must be a string.
 settings.fontSize : The font size. Must be a positive number.
 settings.availableFonts : Names of installed monospaced fonts. This is read only.
+settings.showInvisibleCharacters : Show invisible characters. Must be a boolean.
 
 - Colors
 settings.colorCode : The color for code text. Must be a color tuple.
@@ -248,6 +253,7 @@ class PyREPLSettings(object):
     bannerGreeting = settingsProperty("bannerGreeting", settingsStringValidator)
     startupCode = settingsProperty("startupCode", settingsStringValidator)
     tabString = settingsProperty("tabString", settingsStringValidator)
+    showInvisibleCharacters = settingsProperty("showInvisibleCharacters", settingsBoolValidator)
 
     def editorItems(self):
         d = dict(
@@ -257,7 +263,8 @@ class PyREPLSettings(object):
             colorStdout=self.colorStdout,
             colorStderr=self.colorStderr,
             colorBackground=self.colorBackground,
-            tabString=self.tabString
+            tabString=self.tabString,
+            showInvisibleCharacters=self.showInvisibleCharacters
         )
         return d.items()
 
@@ -374,6 +381,7 @@ class PyREPLWindow(BaseWindowController):
             colorStdout=self.w.editor.setStdoutColor,
             colorStderr=self.w.editor.setStderrColor,
             colorBackground=self.w.editor.setBackgroundColor,
+            showInvisibleCharacters=self.w.editor.setShowInvisibles
         )
         if key in editorMethods:
             editorMethods[key](value)
@@ -477,6 +485,9 @@ class PyREPLTextView(NSTextView):
 
     def setStderrColor_(self, color):
         self._stderrColor = color
+
+    def setShowInvisibles_(self, value):
+        self.layoutManager().setShowsInvisibleCharacters_(value)
 
     # Raw Text
 
@@ -719,6 +730,8 @@ class PyREPLTextEditor(vanilla.TextEditor):
         r, g, b, a = value
         return NSColor.colorWithCalibratedRed_green_blue_alpha_(r, g, b, a)
 
+    def setShowInvisibles(self, value):
+        self.getNSTextView().setShowInvisibles_(value)
 
 # -----------
 # Interpreter
