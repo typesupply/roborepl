@@ -760,7 +760,7 @@ class PyREPLTextView(NSTextView):
             if dropText:
                 self.insertText_(dropText)
                 return True
-        return super(PyREPLTextView, self).readSelectionFromPasteboard_type_(self, pboard, pbType)
+        return super(PyREPLTextView, self).readSelectionFromPasteboard_type_(pboard, pbType)
 
 
 class PyREPLTextEditor(vanilla.TextEditor):
