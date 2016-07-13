@@ -16,6 +16,7 @@ Key Commands
 TAB : Insert the value defined in settings.tabString at the cusror.
 \u21E7+TAB : Remove the value defined in settings.tabString before the cusror.
 ESC : Display auto-completion suggestions.
+\u2318F : Initiate a text search. (Note: replacing found text is not supported.) 
 """.strip()
 
 # This was inspired by the PyObjC Interpreter demo.
@@ -447,6 +448,8 @@ class PyREPLTextView(NSTextView):
         paragraphStyle = NSMutableParagraphStyle.alloc().init()
         paragraphStyle.setLineHeightMultiple_(1.2)
         self.setDefaultParagraphStyle_(paragraphStyle)
+
+        self.setUsesFindBar_(True)
 
         self.setAutomaticQuoteSubstitutionEnabled_(False)
         self.setAutomaticLinkDetectionEnabled_(False)

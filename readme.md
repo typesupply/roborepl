@@ -74,6 +74,7 @@ Yeah, probably. I wrote this thing pretty fast so there are bound to be some pro
 
 - Implemented auto completion. Use the ESC key to bring up suggestions.
 - Fixed a drag and drop bug.
+- ⌘F initiates a text search now.
 
 ##### 0.3
 
