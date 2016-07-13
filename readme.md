@@ -70,7 +70,7 @@ Type `settings.help` and you'll get info about switching the fonts. It's easy.
 
 Yeah, probably. I wrote this thing pretty fast so there are bound to be some problems. Here are the changes I've made in each of the releases. Maybe your bug has been already fixed?
 
-##### 0.4 (not yet released)
+##### 0.4
 
 - Implemented auto completion. Use the ESC key to bring up suggestions.
 - Fixed a drag and drop bug.
