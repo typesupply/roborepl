@@ -73,6 +73,12 @@ Yeah, probably. I wrote this thing pretty fast so there are bound to be some pro
 ##### 0.3 (Not yet released.)
 
 - ⌘C with no selection will copy the latest stdout/stderr output to the pasteboard.
+- Key commands are defined in `help`.
+- Fixed an opacity bug that appeared in transparent windows.
+- ⇧+TAB will delete one level of indentation preceding the cursor.
+- The window can be resized with a mouse drag.
+- Invisible characters can be shown with `settings.showInvisibleCharacters = True`. This relies on the invisible characters being defined in the font. You probably designed the font you are using, so supporting that is your business.
+- Dropping paths from the Finder into the window will format the incoming paths as strings/lists of strings.
 
 ##### 0.2
 

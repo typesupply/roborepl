@@ -13,6 +13,8 @@ Key Commands
 ------------
 \u2318K : Clear the window.
 \u2318C : Copy the latest stdout/stderr output to the pasteboard.
+TAB : Insert the value defined in settings.tabString at the cusror.
+\u21E7+TAB : Remove the value defined in settings.tabString before the cusror.
 """.strip()
 
 # This was inspired by the PyObjC Interpreter demo.
