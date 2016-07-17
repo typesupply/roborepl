@@ -13,8 +13,8 @@ Key Commands
 ------------
 \u2318K : Clear the window.
 \u2318C : Copy the latest stdout/stderr output to the pasteboard.
-TAB : Insert the value defined in settings.tabString at the cusror.
-\u21E7+TAB : Remove the value defined in settings.tabString before the cusror.
+TAB : Insert the value defined in settings.tabString at the cursor.
+\u21E7+TAB : Remove the value defined in settings.tabString before the cursor.
 ESC : Display auto-completion suggestions.
 \u2318F : Initiate a text search. (Note: replacing found text is not supported.) 
 """.strip()
@@ -213,7 +213,7 @@ Example
 -------
 >>> settings.loadTheme("classic")
 >>> settings.colorCode = (0, 0, 1, 1)
->>> settings.colorStdrr
+>>> settings.colorStderr
 (1, 0, 0, 1)
 >>> settings.saveTheme("mine")
 >>> settings.availableFonts
