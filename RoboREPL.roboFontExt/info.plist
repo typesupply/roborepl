@@ -8,7 +8,7 @@
 			<key>path</key>
 			<string>openWindow.py</string>
 			<key>preferredName</key>
-			<string>Open</string>
+			<string>RoboREPL</string>
 			<key>shortKey</key>
 			<array>
 				<integer>1179648</integer>
@@ -31,6 +31,6 @@
 	<key>timeStamp</key>
 	<real>1468175278.5651491</real>
 	<key>version</key>
-	<string>0.5</string>
+	<string>0.5.1</string>
 </dict>
 </plist>

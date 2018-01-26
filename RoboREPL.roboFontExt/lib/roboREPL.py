@@ -16,12 +16,16 @@ Key Commands
 TAB : Insert the value defined in settings.tabString at the cursor.
 \u21E7+TAB : Remove the value defined in settings.tabString before the cursor.
 ESC : Display auto-completion suggestions.
-\u2318F : Initiate a text search. (Note: replacing found text is not supported.) 
+\u2318F : Initiate a text search. (Note: replacing found text is not supported.)
 """.strip()
 
 # This was inspired by the PyObjC Interpreter demo.
 
+from fontTools.misc.py23 import *
+from fontTools.misc.py23 import PY2, PY3
+
 import sys
+
 from code import InteractiveConsole
 from defcon.tools.notifications import NotificationCenter
 from AppKit import *
@@ -50,6 +54,7 @@ try:
     variableChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_"
 except ImportError:
     haveJedi = False
+
 
 # --------
 # Settings
@@ -236,7 +241,7 @@ class PyREPLSettings(object):
 
     def _get_help(self):
         # LOL. This is probably very illegal.
-        print settingsManagerDoc
+        print(settingsManagerDoc)
 
     help = property(_get_help)
 
@@ -286,7 +291,7 @@ class PyREPLSettings(object):
         for name in manager.availableFonts():
             font = NSFont.fontWithName_size_(name, 10)
             if font.isFixedPitch():
-                print name
+                print(name)
 
     availableFonts = property(_get_availableFonts)
 
@@ -387,7 +392,7 @@ class PyREPLWindow(BaseWindowController):
             self.settingsChangedCallback(n)
 
     def settingsChangedCallback(self, notification):
-        key, value = notification.data.items()[0]
+        key, value = list(notification.data.items())[0]
         editorMethods = dict(
             tabString=self.w.editor.setTabString,
             fontName=self.w.editor.setFontName,
@@ -629,7 +634,7 @@ class PyREPLTextView(NSTextView):
                 traceback.print_exc(0)
             else:
                 try:
-                    exec code in namespace
+                    exec(code, namespace)
                 except:
                     etype, value, tb = sys.exc_info()
                     if tb.tb_next is not None:
@@ -865,7 +870,7 @@ class PseudoUTF8Output(object):
         self._write = writemethod
 
     def write(self, s):
-        if not isinstance(s, unicode):
+        if PY2 and not isinstance(s, unicode):
             s = s.decode("utf-8", "replace")
         self._write(s)
 
