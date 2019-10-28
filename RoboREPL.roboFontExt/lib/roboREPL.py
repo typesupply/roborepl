@@ -21,9 +21,6 @@ ESC : Display auto-completion suggestions.
 
 # This was inspired by the PyObjC Interpreter demo.
 
-from fontTools.misc.py23 import *
-from fontTools.misc.py23 import PY2, PY3
-
 import sys
 
 from code import InteractiveConsole
@@ -870,8 +867,6 @@ class PseudoUTF8Output(object):
         self._write = writemethod
 
     def write(self, s):
-        if PY2 and not isinstance(s, unicode):
-            s = s.decode("utf-8", "replace")
         self._write(s)
 
     def writelines(self, lines):
