@@ -116,7 +116,7 @@ def settingsBoolValidator(value):
     return isinstance(value, bool)
 
 def settingsStringValidator(value):
-    return isinstance(value, basestring)
+    return isinstance(value, str)
 
 def settingsNumberValidator(value):
     return isinstance(value, (int, float))
