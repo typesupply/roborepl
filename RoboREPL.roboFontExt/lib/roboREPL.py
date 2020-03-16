@@ -209,6 +209,10 @@ settings.bannerGreeting** : The message displayed at startup. Must be a string.
 settings.startupCode** : Python code to be executed at startup. Must be a string.
 editStartupCode() : Edit the startup code.
 
+- Import/Export Settings
+settings.importSettings() : Load all settings from a ".roboREPLSettings" file. Will overwrite current settings.
+settings.exportSettings() : Save all settings to a ".roboREPLSettings" file. 
+
 *Color tuples are tuples containing four positive numbers between 0 and 1.
 **Only applies to new windows.
 
