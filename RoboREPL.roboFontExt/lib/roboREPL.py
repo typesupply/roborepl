@@ -29,6 +29,7 @@ from AppKit import *
 import vanilla
 from vanilla.vanillaTextEditor import VanillaTextEditorDelegate
 from defconAppKit.windows.baseWindow import BaseWindowController
+import plistlib
 
 try:
     sys.ps1
@@ -324,6 +325,57 @@ class PyREPLSettings(object):
         userThemes = getDefaultValue("userThemes")
         userThemes[name] = theme
         setDefaultValue("userThemes", userThemes)
+
+    def exportSettings(self):
+        if inRoboFont:
+            exportPath = mojo.UI.PutFile(message="Export RoboREPL Settings", fileName="Settings.roboREPLSettings")
+        else:
+            exportPath = vanilla.dialogs.putFile(messageText="Export RoboREPL Settings", fileName="Settings.roboREPLSettings")
+
+        if exportPath:
+            d = dict(
+                windowWidth=int(self.windowWidth),
+                windowHeight=int(self.windowHeight),
+                fontName=str(self.fontName),
+                fontSize=int(self.fontSize),
+                colorCode=tuple(self.colorCode),
+                colorStdout=tuple(self.colorStdout),
+                colorStderr=tuple(self.colorStderr),
+                colorBackground=tuple(self.colorBackground),
+                bannerGreeting=str(self.bannerGreeting),
+                startupCode=str(self.startupCode),
+                tabString=str(self.tabString),
+                showInvisibleCharacters=bool(self.showInvisibleCharacters),
+                userThemes=dict(getDefaultValue("userThemes"))
+            )
+
+            with open(exportPath, 'wb') as f:
+                plistlib.dump(d, f)
+
+    def importSettings(self):
+        if inRoboFont:
+            importPath = mojo.UI.GetFile(message="Import RoboREPL Settings", fileTypes=["roboREPLSettings"])
+        else:
+            importPath = vanilla.dialogs.getFile(messageText="Import RoboREPL Settings", fileTypes=["roboREPLSettings"])
+
+        if importPath:
+            with open(importPath, 'rb') as f:
+                d = plistlib.load(f)
+
+            self.windowWidth = int(d["windowWidth"])
+            self.windowHeight = int(d["windowHeight"])
+            self.fontName = str(d["fontName"])
+            self.fontSize = int(d["fontSize"])
+            self.colorCode = tuple(d["colorCode"])
+            self.colorStdout = tuple(d["colorStdout"])
+            self.colorStderr = tuple(d["colorStderr"])
+            self.colorBackground = tuple(d["colorBackground"])
+            self.bannerGreeting = str(d["bannerGreeting"])
+            self.startupCode = str(d["startupCode"])
+            self.tabString = str(d["tabString"])
+            self.showInvisibleCharacters = bool(d["showInvisibleCharacters"])
+            self.userThemes = dict(d["userThemes"])
+
 
 
 if inRoboFont:
