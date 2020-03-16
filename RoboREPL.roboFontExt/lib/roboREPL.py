@@ -211,7 +211,7 @@ editStartupCode() : Edit the startup code.
 
 - Import/Export Settings
 settings.importSettings() : Load all settings from a ".roboREPLSettings" file. Will overwrite current settings.
-settings.exportSettings() : Save all settings to a ".roboREPLSettings" file. 
+settings.exportSettings() : Save all settings to a ".roboREPLSettings" file.
 
 *Color tuples are tuples containing four positive numbers between 0 and 1.
 **Only applies to new windows.
@@ -331,10 +331,7 @@ class PyREPLSettings(object):
         setDefaultValue("userThemes", userThemes)
 
     def exportSettings(self):
-        if inRoboFont:
-            exportPath = mojo.UI.PutFile(message="Export RoboREPL Settings", fileName="Settings.roboREPLSettings")
-        else:
-            exportPath = vanilla.dialogs.putFile(messageText="Export RoboREPL Settings", fileName="Settings.roboREPLSettings")
+        exportPath = vanilla.dialogs.putFile(messageText="Export RoboREPL Settings", fileName="Settings.roboREPLSettings")
 
         if exportPath:
             d = dict(
@@ -357,30 +354,41 @@ class PyREPLSettings(object):
                 plistlib.dump(d, f)
 
     def importSettings(self):
-        if inRoboFont:
-            importPath = mojo.UI.GetFile(message="Import RoboREPL Settings", fileTypes=["roboREPLSettings"])
-        else:
-            importPath = vanilla.dialogs.getFile(messageText="Import RoboREPL Settings", fileTypes=["roboREPLSettings"])
+        importPath = (vanilla.dialogs.getFile(messageText="Import RoboREPL Settings", fileTypes=["roboREPLSettings"]))[0]
 
         if importPath:
             with open(importPath, 'rb') as f:
-                d = plistlib.load(f)
+                try:
+                    d = plistlib.load(f)
+                except:
+                    raise PyREPLSettingsError("There was an error when loading settings file: %s." % importPath)
 
-            self.windowWidth = int(d["windowWidth"])
-            self.windowHeight = int(d["windowHeight"])
-            self.fontName = str(d["fontName"])
-            self.fontSize = int(d["fontSize"])
-            self.colorCode = tuple(d["colorCode"])
-            self.colorStdout = tuple(d["colorStdout"])
-            self.colorStderr = tuple(d["colorStderr"])
-            self.colorBackground = tuple(d["colorBackground"])
-            self.bannerGreeting = str(d["bannerGreeting"])
-            self.startupCode = str(d["startupCode"])
-            self.tabString = str(d["tabString"])
-            self.showInvisibleCharacters = bool(d["showInvisibleCharacters"])
-            self.userThemes = dict(d["userThemes"])
-
-
+            if "windowWidth" in d.keys():
+                self.windowWidth = int(d["windowWidth"])
+            if "windowHeight" in d.keys():
+                self.windowHeight = int(d["windowHeight"])
+            if "fontName" in d.keys():
+                self.fontName = str(d["fontName"])
+            if "fontSize" in d.keys():
+                self.fontSize = int(d["fontSize"])
+            if "colorCode" in d.keys():
+                self.colorCode = tuple(d["colorCode"])
+            if "colorStdout" in d.keys():
+                self.colorStdout = tuple(d["colorStdout"])
+            if "colorStderr" in d.keys():
+                self.colorStderr = tuple(d["colorStderr"])
+            if "colorBackground" in d.keys():
+                self.colorBackground = tuple(d["colorBackground"])
+            if "bannerGreeting" in d.keys():
+                self.bannerGreeting = str(d["bannerGreeting"])
+            if "startupCode" in d.keys():
+                self.startupCode = str(d["startupCode"])
+            if "tabString" in d.keys():
+                self.tabString = str(d["tabString"])
+            if "showInvisibleCharacters" in d.keys():
+                self.showInvisibleCharacters = bool(d["showInvisibleCharacters"])
+            if "userThemes" in d.keys():
+                setDefaultValue("userThemes", dict(d["userThemes"]))
 
 if inRoboFont:
     defaultStub = "com.typesupply.RoboREPL."
