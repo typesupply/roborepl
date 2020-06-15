@@ -29,6 +29,7 @@ from AppKit import *
 import vanilla
 from vanilla.vanillaTextEditor import VanillaTextEditorDelegate
 from defconAppKit.windows.baseWindow import BaseWindowController
+import plistlib
 
 try:
     sys.ps1
@@ -208,6 +209,10 @@ settings.bannerGreeting** : The message displayed at startup. Must be a string.
 settings.startupCode** : Python code to be executed at startup. Must be a string.
 editStartupCode() : Edit the startup code.
 
+- Import/Export Settings
+settings.importSettings() : Load all settings from a ".roboREPLSettings" file. Will overwrite current settings.
+settings.exportSettings() : Save all settings to a ".roboREPLSettings" file.
+
 *Color tuples are tuples containing four positive numbers between 0 and 1.
 **Only applies to new windows.
 
@@ -325,6 +330,65 @@ class PyREPLSettings(object):
         userThemes[name] = theme
         setDefaultValue("userThemes", userThemes)
 
+    def exportSettings(self):
+        exportPath = vanilla.dialogs.putFile(messageText="Export RoboREPL Settings", fileName="Settings.roboREPLSettings")
+
+        if exportPath:
+            d = dict(
+                windowWidth=int(self.windowWidth),
+                windowHeight=int(self.windowHeight),
+                fontName=str(self.fontName),
+                fontSize=int(self.fontSize),
+                colorCode=tuple(self.colorCode),
+                colorStdout=tuple(self.colorStdout),
+                colorStderr=tuple(self.colorStderr),
+                colorBackground=tuple(self.colorBackground),
+                bannerGreeting=str(self.bannerGreeting),
+                startupCode=str(self.startupCode),
+                tabString=str(self.tabString),
+                showInvisibleCharacters=bool(self.showInvisibleCharacters),
+                userThemes=dict(getDefaultValue("userThemes"))
+            )
+
+            with open(exportPath, 'wb') as f:
+                plistlib.dump(d, f)
+
+    def importSettings(self):
+        importPath = (vanilla.dialogs.getFile(messageText="Import RoboREPL Settings", fileTypes=["roboREPLSettings"]))[0]
+
+        if importPath:
+            with open(importPath, 'rb') as f:
+                try:
+                    d = plistlib.load(f)
+                except:
+                    raise PyREPLSettingsError("There was an error when loading settings file: %s." % importPath)
+
+            if "windowWidth" in d.keys():
+                self.windowWidth = int(d["windowWidth"])
+            if "windowHeight" in d.keys():
+                self.windowHeight = int(d["windowHeight"])
+            if "fontName" in d.keys():
+                self.fontName = str(d["fontName"])
+            if "fontSize" in d.keys():
+                self.fontSize = int(d["fontSize"])
+            if "colorCode" in d.keys():
+                self.colorCode = tuple(d["colorCode"])
+            if "colorStdout" in d.keys():
+                self.colorStdout = tuple(d["colorStdout"])
+            if "colorStderr" in d.keys():
+                self.colorStderr = tuple(d["colorStderr"])
+            if "colorBackground" in d.keys():
+                self.colorBackground = tuple(d["colorBackground"])
+            if "bannerGreeting" in d.keys():
+                self.bannerGreeting = str(d["bannerGreeting"])
+            if "startupCode" in d.keys():
+                self.startupCode = str(d["startupCode"])
+            if "tabString" in d.keys():
+                self.tabString = str(d["tabString"])
+            if "showInvisibleCharacters" in d.keys():
+                self.showInvisibleCharacters = bool(d["showInvisibleCharacters"])
+            if "userThemes" in d.keys():
+                setDefaultValue("userThemes", dict(d["userThemes"]))
 
 if inRoboFont:
     defaultStub = "com.typesupply.RoboREPL."
