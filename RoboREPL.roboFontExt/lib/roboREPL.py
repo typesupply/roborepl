@@ -25,6 +25,7 @@ import sys
 
 from code import InteractiveConsole
 from defcon.tools.notifications import NotificationCenter
+from objc import super
 from AppKit import *
 import vanilla
 from vanilla.vanillaTextEditor import VanillaTextEditorDelegate

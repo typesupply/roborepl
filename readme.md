@@ -70,6 +70,10 @@ Type `settings.help` and you'll get info about switching the fonts. It's easy.
 
 Yeah, probably. I wrote this thing pretty fast so there are bound to be some problems. Here are the changes I've made in each of the releases. Maybe your bug has been already fixed?
 
+##### 0.6
+
+- Fixed a crasher.
+
 ##### 0.5
 
 - Fixed a bug that would be raised is startup code contained indentation.
