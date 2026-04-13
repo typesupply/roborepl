@@ -26,7 +26,7 @@ import sys
 from code import InteractiveConsole
 from defcon.tools.notifications import NotificationCenter
 from objc import super
-from AppKit import *
+import AppKit
 import vanilla
 from vanilla.vanillaTextEditor import VanillaTextEditorDelegate
 from defconAppKit.windows.baseWindow import BaseWindowController
@@ -290,9 +290,9 @@ class PyREPLSettings(object):
     # Fonts
 
     def _get_availableFonts(self):
-        manager = NSFontManager.sharedFontManager()
+        manager = AppKit.NSFontManager.sharedFontManager()
         for name in manager.availableFonts():
-            font = NSFont.fontWithName_size_(name, 10)
+            font = AppKit.NSFont.fontWithName_size_(name, 10)
             if font.isFixedPitch():
                 print(name)
 
@@ -432,7 +432,7 @@ class PyREPLWindow(BaseWindowController):
 
         window = self.w.getNSWindow()
         window.setOpaque_(False)
-        window.setBackgroundColor_(NSColor.clearColor())
+        window.setBackgroundColor_(AppKit.NSColor.clearColor())
 
         settingsManager.addObserver(self, "settingsChangedCallback")
         settingsManager.addObserver(self, "showStartupCodeEditorCallback", "PyREPL.ShowStartupCodeEditor")
@@ -504,7 +504,7 @@ class PyREPLStatupCodeEditor(object):
 # Editor
 # ------
 
-class PyREPLTextView(NSTextView):
+class PyREPLTextView(AppKit.NSTextView):
 
     def init(self):
         self = super(PyREPLTextView, self).init()
@@ -512,7 +512,7 @@ class PyREPLTextView(NSTextView):
 
         self.setDrawsBackground_(True)
 
-        paragraphStyle = NSMutableParagraphStyle.alloc().init()
+        paragraphStyle = AppKit.NSMutableParagraphStyle.alloc().init()
         paragraphStyle.setLineHeightMultiple_(1.2)
         self.setDefaultParagraphStyle_(paragraphStyle)
 
@@ -527,9 +527,9 @@ class PyREPLTextView(NSTextView):
         self.setAutomaticSpellingCorrectionEnabled_(False)
         self.setAutomaticTextReplacementEnabled_(False)
 
-        self._codeColor = NSColor.blackColor()
-        self._stderrColor = NSColor.blackColor()
-        self._stdoutColor = NSColor.blackColor()
+        self._codeColor = AppKit.NSColor.blackColor()
+        self._stderrColor = AppKit.NSColor.blackColor()
+        self._stdoutColor = AppKit.NSColor.blackColor()
         self._glyphWidth = 1
 
         self._console = None
@@ -595,12 +595,12 @@ class PyREPLTextView(NSTextView):
         self.setSelectedRange_((index, 0))
 
     def keyDown_(self, event):
-        if event.modifierFlags() & NSCommandKeyMask and event.characters() == "k":
+        if event.modifierFlags() & AppKit.NSCommandKeyMask and event.characters() == "k":
             self.clear()
-        elif event.modifierFlags() & NSCommandKeyMask and event.characters() == "c":
-            pb = NSPasteboard.generalPasteboard()
+        elif event.modifierFlags() & AppKit.NSCommandKeyMask and event.characters() == "c":
+            pb = AppKit.NSPasteboard.generalPasteboard()
             pb.clearContents()
-            a = NSArray.arrayWithObject_(self.previousOutput)
+            a = AppKit.NSArray.arrayWithObject_(self.previousOutput)
             pb.writeObjects_(a)
         else:
             return super(PyREPLTextView, self).keyDown_(event)
@@ -627,14 +627,14 @@ class PyREPLTextView(NSTextView):
         self._historyIndex += 1
         if self._historyIndex > len(self._history):
             self._historyIndex = len(self._history)
-            NSBeep()
+            AppKit.NSBeep()
         self._insertHistoryLine()
 
     def moveUp_(self, sender):
         self._historyIndex -= 1
         if self._historyIndex < 0:
             self._historyIndex = 0
-            NSBeep()
+            AppKit.NSBeep()
         self._insertHistoryLine()
 
     def _insertHistoryLine(self):
@@ -652,11 +652,11 @@ class PyREPLTextView(NSTextView):
 
     def makeAttributedString_withColor_(self, text, color):
         attrs = {
-            NSForegroundColorAttributeName : color,
-            NSFontAttributeName : self.font(),
-            NSParagraphStyleAttributeName : self.defaultParagraphStyle()
+            AppKit.NSForegroundColorAttributeName : color,
+            AppKit.NSFontAttributeName : self.font(),
+            AppKit.NSParagraphStyleAttributeName : self.defaultParagraphStyle()
         }
-        text = NSAttributedString.alloc().initWithString_attributes_(
+        text = AppKit.NSAttributedString.alloc().initWithString_attributes_(
             text,
             attrs
         )
@@ -739,7 +739,7 @@ class PyREPLTextView(NSTextView):
         begin, length = toRange
         if length == 0:
             if begin < self._minInsertionPoint:
-                NSBeep()
+                AppKit.NSBeep()
                 begin = self._minInsertionPoint
             toRange = (begin, length)
         return toRange
@@ -775,7 +775,7 @@ class PyREPLTextView(NSTextView):
             charRange.length = len(partialString)
         for c in partialString:
             if c not in variableChars:
-                return (NSNotFound, 0)
+                return (AppKit.NSNotFound, 0)
         return charRange
 
     def completionsForPartialWordRange_indexOfSelectedItem_(self, charRange, index):
@@ -794,7 +794,7 @@ class PyREPLTextView(NSTextView):
 
     def selectionRangeForProposedRange_granularity_(self, proposedRange, granularity):
         location = proposedRange.location
-        if granularity == NSSelectByWord and proposedRange.length == 0 and location != 0:
+        if granularity == AppKit.NSSelectByWord and proposedRange.length == 0 and location != 0:
             text = self.string()
             lenText = len(text)
             length = 1
@@ -826,8 +826,8 @@ class PyREPLTextView(NSTextView):
     # Drop
 
     def readSelectionFromPasteboard_type_(self, pboard, pbType):
-        if pbType == NSFilenamesPboardType:
-            paths = pboard.propertyListForType_(NSFilenamesPboardType)
+        if pbType == AppKit.NSFilenamesPboardType:
+            paths = pboard.propertyListForType_(AppKit.NSFilenamesPboardType)
             dropText = ""
             if len(paths) == 1:
                 dropText = 'u"%s"' % paths[0]
@@ -851,7 +851,7 @@ class PyREPLTextEditor(vanilla.TextEditor):
         textView = self.getNSTextView()
         scrollView = self.getNSScrollView()
         scrollView.setDrawsBackground_(False)
-        scrollView.setBorderType_(NSNoBorder)
+        scrollView.setBorderType_(AppKit.NSNoBorder)
         self._fontName = "Menlo-Regular"
         self._fontSize = 10
 
@@ -879,7 +879,7 @@ class PyREPLTextEditor(vanilla.TextEditor):
 
     def _updateFont(self):
         view = self.getNSTextView()
-        font = NSFont.fontWithName_size_(self._fontName, self._fontSize)
+        font = AppKit.NSFont.fontWithName_size_(self._fontName, self._fontSize)
         if font is not None:
             view.setFont_(font)
 
@@ -901,7 +901,7 @@ class PyREPLTextEditor(vanilla.TextEditor):
 
     def _makeColor(self, value):
         r, g, b, a = value
-        return NSColor.colorWithCalibratedRed_green_blue_alpha_(r, g, b, a)
+        return AppKit.NSColor.colorWithCalibratedRed_green_blue_alpha_(r, g, b, a)
 
     def setShowInvisibles(self, value):
         self.getNSTextView().setShowInvisibles_(value)
